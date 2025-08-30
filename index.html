@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum AI in Finance</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&family=Teko:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* Custom Styles & Animations */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #0a0a0a;
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Teko', sans-serif;
+            letter-spacing: 1px;
+        }
+
+        .hero-title {
+            text-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+        }
+
+        .pulse-fade-in {
+            animation: pulseFadeIn 2s ease-out forwards;
+        }
+
+        @keyframes pulseFadeIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            70% {
+                opacity: 1;
+                transform: scale(1.02);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        #reading-progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
+            width: 0%;
+            z-index: 9999;
+            transition: width 0.1s linear;
+        }
+
+        .article-content h2 {
+            font-size: 2.5rem; /* 40px */
+            line-height: 1.1;
+            margin-top: 3rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #818cf8;
+            padding-left: 1rem;
+        }
+        
+        .article-content h3 {
+            font-size: 1.875rem; /* 30px */
+            line-height: 1.2;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+            color: #c084fc;
+        }
+        
+        .article-content p {
+            font-size: 1.125rem; /* 18px */
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+
+        .glowing-border-excellent {
+            border: 2px solid transparent;
+            animation: glowing 2s infinite;
+            background: linear-gradient(45deg, #0f172a, #1e2b3b) padding-box,
+                        linear-gradient(45deg, #38bdf8, #818cf8, #f472b6, #38bdf8) border-box;
+        }
+
+        @keyframes glowing {
+            0% {
+                background-position: 0% 50%;
+                background-size: 200% 200%;
+            }
+            50% {
+                background-position: 100% 50%;
+                background-size: 200% 200%;
+            }
+            100% {
+                background-position: 0% 50%;
+                background-size: 200% 200%;
+            }
+        }
+
+        .confetti {
+            position: absolute;
+            width: 8px;
+            height: 16px;
+            background-color: #f00;
+            opacity: 1;
+            animation: fall 5s linear forwards;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Style for the new particle background canvas */
+        #particle-canvas { 
+            position: fixed; 
+            inset: 0; 
+            z-index: -1; 
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-300">
+
+    <div id="reading-progress-bar"></div>
+
+    <canvas id="particle-canvas"></canvas>
+
+    <audio id="background-music" loop>
+        <source src="https://res.cloudinary.com/dad8v7kqc/video/upload/v1756580305/yt1z.net_-_2CELLOS_-_Game_of_Thrones_Live_at_Sydney_Opera_House_320_KBps_kcr7qc.m4a" type="audio/mp4">
+    </audio>
+
+    <div id="welcome-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-500">
+        <div class="text-center p-8">
+            <h1 class="text-5xl md:text-7xl font-bold text-white mb-4 pulse-fade-in" style="animation-delay: 0.2s;">Welcome. I'm Touhid.</h1>
+            <p class="text-xl text-slate-300 mb-8 pulse-fade-in" style="animation-delay: 0.5s;">This is a showcase of my expertise in strategic writing and immersive web development. Enjoy the experience.</p>
+            <button id="start-btn" class="bg-indigo-500 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-indigo-400 transition-all duration-300 transform hover:scale-105 pulse-fade-in" style="animation-delay: 0.8s;">
+                Start Exploring
+            </button>
+        </div>
+    </div>
+
+    <header class="relative h-screen w-full flex items-center justify-start overflow-hidden">
+        <video autoplay loop muted playsinline id="hero-video" class="absolute z-0 w-auto min-w-full min-h-full max-w-none">
+            <source src="https://res.cloudinary.com/dad8v7kqc/video/upload/v1756578977/XPRIZE_Quantum_Applications___Google_Quantum_AI_1080P_HD_xyqwym.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <div class="absolute inset-0 bg-black/50 z-10"></div>
+        <div class="relative z-20 container mx-auto px-6 md:px-12">
+            <div class="text-left w-full md:w-3/4 lg:w-2/3">
+                <h1 class="hero-title text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-wide uppercase">Quantum AI</h1>
+                <h2 class="hero-title text-3xl md:text-4xl lg:text-5xl text-indigo-300 mt-2">The New Frontier of Financial Trading</h2>
+                <div class="mt-8 flex gap-4">
+                    <a href="#content" class="px-6 py-3 rounded-lg bg-gray-900/60 text-white font-semibold backdrop-blur-sm border border-white/20 hover:bg-gray-900/80 transition-colors">Explore Article</a>
+                    <a href="#quiz-section" class="px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-500 transition-colors">Take the Quiz</a>
+                </div>
+            </div>
+        </div>
+        <button id="hero-audio-toggle" class="absolute bottom-8 right-8 z-20 p-3 bg-white/20 rounded-full backdrop-blur-sm hover:bg-white/30 transition-colors">
+            <svg id="icon-muted" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" clip-rule="evenodd" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+            </svg>
+             <svg id="icon-unmuted" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+            </svg>
+        </button>
+    </header>
+
+    <main id="content" class="relative z-10 py-12">
+        <div class="max-w-6xl mx-auto px-6 md:px-8 article-content">
+
+            <p class="text-xl text-indigo-200 leading-relaxed border-l-4 border-indigo-500 pl-6 mb-12">
+                The financial industry stands at the precipice of its most significant technological transformation since electronic trading. While artificial intelligence has already reshaped trading strategies across global markets, the convergence of quantum computing and AI promises to unlock unprecedented capabilities that will fundamentally redefine market analysis, risk management, and portfolio optimization. This isn't incremental improvement—it's the emergence of quantum supremacy in financial markets, and the competitive window is narrowing rapidly.
+            </p>
+
+            <section data-tts-section>
+                <h2><span class="tts-trigger">The Computational Crisis: Why Traditional Systems Hit the Wall</span></h2>
+                <p>Traditional trading algorithms, despite their sophistication, face insurmountable computational limitations when processing the exponential complexity of modern financial markets. Classical computers analyze market data sequentially, creating bottlenecks that quantum systems eliminate through superposition and entanglement—the fundamental principles that allow quantum computers to process multiple market scenarios simultaneously rather than one at a time.</p>
+                <p>The mathematical reality is stark: quantum computers can potentially solve optimization problems exponentially faster than classical systems. For portfolio optimization—a combinatorial problem that scales exponentially with asset numbers—quantum algorithms can reduce time complexity from polynomial to logarithmic scales. This translates to analyzing thousands of market scenarios simultaneously, providing trading advantages that classical systems simply cannot match.</p>
+                <figure class="my-8 text-center">
+                    <img src="https://res.cloudinary.com/dad8v7kqc/image/upload/v1756579148/Exponential_growth_visualization_with_progressive_bar_chart_showing_rapid_data_complexity_increase_duz3km.png" alt="Graph showing exponential data complexity growth" class="w-full h-auto rounded-lg shadow-2xl shadow-indigo-900/20">
+                    <figcaption class="mt-3 text-sm italic text-slate-400">Quantum systems are designed to handle the exponential complexity that cripples classical computers.</figcaption>
+                </figure>
+                <p>The performance metrics from early implementations reveal the magnitude of this transformation. Quantum-enhanced systems demonstrate 15-30% improvement in signal detection compared to classical approaches during volatile market conditions, nanosecond-level decision advantages in high-frequency trading algorithms, and 99% accuracy rates in automated trading model optimization through quantum neural networks.</p>
+            </section>
+            
+            <hr class="my-12 border-slate-700"/>
+
+            <section data-tts-section>
+                <h2><span class="tts-trigger">Market Performance: Measurable Quantum Advantages</span></h2>
+                <p>Real-world implementations are already delivering quantifiable results that validate the quantum approach. The collaboration between SpinQ and Huaxia Bank achieved a 99% accuracy rate in ATM optimization using quantum neural networks, while quantum annealing methods produced portfolio increases of 200,000 Indian Rupees over benchmark performance. These aren't theoretical projections—they represent measurable competitive advantages available today.</p>
+                <figure class="my-8 text-center">
+                    <img src="https://res.cloudinary.com/dad8v7kqc/image/upload/v1756579152/JPMorgan_corporate_signage_representing_institutional_quantum_adoption_leadership_nx15ve.png" alt="JPMorgan Chase building signage" class="w-full h-auto rounded-lg shadow-2xl shadow-indigo-900/20">
+                    <figcaption class="mt-3 text-sm italic text-slate-400">Institutions like JPMorgan Chase are leading the charge in quantum adoption, replacing legacy systems.</figcaption>
+                </figure>
+                <p>JPMorgan Chase exemplifies institutional quantum adoption, replacing Monte Carlo simulations with quantum algorithms to significantly accelerate portfolio optimization processes. The bank's quantum-powered deep hedging algorithm demonstrates how leading institutions leverage quantum advantages for measurable performance improvements in real trading environments.</p>
+                
+                <div class="my-12 bg-slate-900/80 p-6 rounded-lg shadow-lg border border-slate-800">
+                    <canvas id="marketGrowthChart"></canvas>
+                    <p class="mt-4 text-sm text-center italic text-slate-400">Projected growth of the Quantum AI market from 2025 to 2034.</p>
+                </div>
+
+                <p>The quantum AI market reflects this institutional confidence, with projections indicating explosive growth from $473.54 million in 2025 to $6,959.29 million by 2034—representing a 34.80% compound annual growth rate. Financial services represents one of the most promising sectors, with 48% of surveyed organizations citing finance-oriented optimization as their top quantum computing priority.</p>
+            </section>
+
+            <hr class="my-12 border-slate-700"/>
+
+            <section data-tts-section>
+                <h2><span class="tts-trigger">Strategic Applications: Where Quantum Computing Creates Alpha</span></h2>
+                <h3>Portfolio Optimization Revolution</h3>
+                <p>The most immediate application lies in portfolio optimization, where quantum algorithms excel at handling the NP-hard nature of asset allocation problems. Traditional mean-variance optimization struggles with complex asset interactions, but quantum systems can evaluate exponentially larger solution spaces to identify non-intuitive diversification opportunities that classical methods miss entirely.</p>
+                <figure class="my-8 text-center">
+                    <img src="https://res.cloudinary.com/dad8v7kqc/image/upload/v1756579150/Neural_Networks_Trading_Models_with_Python_integration_showing_AI-driven_trading_systems_macxgt.jpg" alt="Visualization of a neural network for trading models" class="w-full h-auto rounded-lg shadow-2xl shadow-indigo-900/20">
+                    <figcaption class="mt-3 text-sm italic text-slate-400">Quantum Generative Adversarial Networks find subtle market signals to generate alpha.</figcaption>
+                </figure>
+                <p>Quantum Generative Adversarial Networks and Quantum Variational Circuits leverage quantum superposition to represent multiple market states simultaneously. This enables more efficient exploration of feature spaces and better identification of subtle market signals that generate alpha in competitive trading environments.</p>
+                
+                <h3>Risk Management at Quantum Speed</h3>
+                <p>Quantum-enhanced risk assessment transforms Value-at-Risk calculations through amplitude estimation, providing quadratic speedups for Monte Carlo simulations. This enables more precise tail risk estimates—crucial for managing extreme market events where traditional correlations break down and standard risk models fail.</p>
+                <p>The technology excels at early anomaly detection, identifying subtle market behavior shifts that precede major regime changes. Quantum algorithms process more data dimensions simultaneously, providing earlier warnings of volatility spikes across multiple asset classes and enabling proactive risk management strategies.</p>
+
+                <h3>High-Frequency Trading Acceleration</h3>
+                <p>In high-frequency trading, where milliseconds determine profitability, quantum computing delivers 20-30% faster market microstructure analysis. Quantum interference amplifies profitable trading signals while suppressing market noise—a critical advantage in today's high-noise trading environments where signal-to-noise ratio determines competitive positioning.</p>
+                <p>Quantum systems enable real-time processing of order book dynamics, identifying arbitrage opportunities and market inefficiencies that disappear within microseconds. This processing advantage translates directly to improved execution quality and enhanced alpha generation in institutional trading operations.</p>
+            </section>
+            
+            <hr class="my-12 border-slate-700"/>
+
+            <section data-tts-section>
+                <h2><span class="tts-trigger">Technology Architecture: Hybrid Quantum-Classical Systems</span></h2>
+                <p>The most practical approach combines quantum algorithms for optimization with classical systems for execution and risk management. This hybrid methodology leverages quantum advantages where they matter most while maintaining compatibility with existing financial infrastructure and regulatory frameworks.</p>
+                <figure class="my-8 text-center">
+                    <img src="https://res.cloudinary.com/dad8v7kqc/image/upload/v1756579152/Images_showing_hybrid_quantum-classical_systems_f84krr.png" alt="Diagram of a hybrid quantum-classical system" class="w-full h-auto rounded-lg shadow-2xl shadow-indigo-900/20">
+                    <figcaption class="mt-3 text-sm italic text-slate-400">Hybrid systems merge the power of quantum with the reliability of classical computing.</figcaption>
+                </figure>
+                <p>Leading implementations use Quantum Approximate Optimization Algorithm within generative frameworks, enabling portfolio managers to discover non-intuitive asset combinations that maximize returns while precisely controlling risk factors. Quantum Boltzmann Machines excel at modeling complex correlations between different financial instruments across global markets, providing richer understanding of systemic risks and cross-market opportunities.</p>
+                <p>The hybrid architecture addresses current quantum limitations including hardware constraints, noise, and decoherence that affect computational output quality. Successful implementations employ sophisticated feature selection to identify quantum-relevant market factors, reducing required quantum resources while maximizing quantum computational advantages.</p>
+            </section>
+            
+            <hr class="my-12 border-slate-700"/>
+
+            <section data-tts-section>
+                <h2><span class="tts-trigger">Institutional Strategy: Three Pathways to Quantum Leadership</span></h2>
+                <p>Leading financial institutions are adopting distinct quantum strategies based on their resource capabilities and risk tolerance:</p>
+                <h3>In-House Development Approach</h3>
+                <p>Major banks like HSBC and JPMorgan have established dedicated quantum research teams with substantial budget allocations. HSBC pioneers quantum protection for AI-powered foreign exchange trading, while JPMorgan develops proprietary quantum algorithms for portfolio optimization and risk management. This approach requires significant capital investment but provides maximum control over quantum capabilities and intellectual property.</p>
+                <h3>Strategic Investment Strategy</h3>
+                <p>BNP Paribas and Axa Venture Partners invest directly in quantum startups, positioning for rapid response to quantum developments while diversifying quantum technology risks. This approach enables access to cutting-edge quantum innovations without the substantial overhead of in-house quantum research teams.</p>
+                <h3>Partnership Collaboration Model</h3>
+                <p>Collaborative projects focus on specific applications, reducing implementation risks while accessing quantum capabilities through established quantum computing providers. This model enables smaller institutions to leverage quantum advantages without massive capital commitments while building internal quantum expertise gradually.</p>
+                <figure class="my-8 text-center">
+                    <div class="w-full h-auto rounded-lg shadow-2xl shadow-indigo-900/20 overflow-hidden" style="padding-bottom: 56.25%; position: relative;">
+                        <div id="youtube-player" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
+                    </div>
+                    <figcaption class="mt-3 text-sm italic text-slate-400">Experts discuss the real-world applications and timeline for quantum computing's impact.</figcaption>
+                </figure>
+            </section>
+
+            <hr class="my-12 border-slate-700"/>
+
+            <section data-tts-section>
+                <h2><span class="tts-trigger">Implementation Framework: Overcoming Quantum Challenges</span></h2>
+                <p>Current quantum systems face hardware constraints including computational noise and quantum decoherence that require sophisticated error correction and noise-aware post-processing to maximize result quality. However, practical integration strategies are emerging that deliver quantum advantages despite these limitations.</p>
+                <p>Successful implementations employ advanced feature selection methodologies to identify quantum-relevant market factors, reducing required quantum resources while maximizing quantum computational advantages. Post-processing using classical statistical techniques extracts additional value from quantum computations, creating hybrid systems that outperform purely classical or purely quantum approaches.</p>
+                <p>The technology infrastructure requires specialized quantum networking capabilities that enable real-time collaborative optimization across distributed trading systems. This represents the evolution toward quantum-native financial ecosystems rather than simply faster computational machines.</p>
+            </section>
+
+            <hr class="my-12 border-slate-700"/>
+            
+            <section data-tts-section>
+                <h2><span class="tts-trigger">The Competitive Imperative: Why Timing Matters</span></h2>
+                <p>The convergence of quantum computing and AI in trading isn't a distant future possibility—it's happening now. Companies like PsiQuantum and IonQ are raising hundreds of millions to advance fault tolerance and quantum networking capabilities. Rigetti promises quantum systems with over 100 qubits by year-end, while Quantum Computing Inc. already delivers quantum machines to NASA and other government agencies.</p>
+                <figure class="my-8 text-center">
+                    <img src="https://res.cloudinary.com/dad8v7kqc/image/upload/v1756579152/Images_showing_quantum_hardware_and_competitive_positioning_ds14ey.png" alt="Quantum computer hardware" class="w-full h-auto rounded-lg shadow-2xl shadow-indigo-900/20">
+                    <figcaption class="mt-3 text-sm italic text-slate-400">The hardware is advancing rapidly, shrinking the window for early adoption.</figcaption>
+                </figure>
+                <p>The $20 billion investment projection by 2030 and $100 billion revenue potential by 2035 underscore the massive opportunity window for early adopters. Financial institutions that delay quantum adoption risk falling behind competitors already leveraging quantum advantages for measurable performance improvements in live trading environments.</p>
+                <p>As fault-tolerant quantum computers become commercially viable—potentially within five years—the financial industry will experience its most significant technological transformation since the introduction of electronic trading systems. Organizations positioning themselves at the quantum frontier today will define tomorrow's competitive landscape and market leadership positions.</p>
+            </section>
+
+            <hr class="my-12 border-slate-700"/>
+
+            <section data-tts-section>
+                <h2><span class="tts-trigger">Strategic Market Positioning: The Quantum-Native Future</span></h2>
+                <p>The evolution toward quantum-native financial systems will fundamentally reshape market dynamics and competitive positioning. We're witnessing the emergence of quantum-enhanced trading ecosystems that provide systemic advantages rather than merely incremental computational improvements.</p>
+                <p>Quantum networking capabilities will enable real-time collaborative optimization across distributed trading systems, creating new forms of market efficiency and competitive advantage. The institutions that master quantum-enhanced AI trading will not only outperform competitors—they will operate in fundamentally different competitive environments with superior analytical capabilities and risk management frameworks.</p>
+                <p>The quantum advantage is real, measurable, and available today through hybrid quantum-classical systems that integrate with existing trading infrastructure. Early adopters are already capturing measurable alpha through quantum-enhanced portfolio optimization, risk management, and high-frequency trading strategies.</p>
+            </section>
+
+            <hr class="my-12 border-slate-700"/>
+            
+            <section data-tts-section>
+                 <h2><span class="tts-trigger">The Strategic Decision: Lead or Follow</span></h2>
+                <p>The question facing institutional leadership isn't whether quantum-enhanced AI trading will revolutionize financial markets—the transformation is already underway. The strategic question is whether your organization will lead this quantum transformation or be disrupted by competitors who embrace quantum advantages today.</p>
+                <p>The convergence of quantum computing and artificial intelligence represents the most significant opportunity for competitive differentiation in financial markets since the advent of algorithmic trading. The quantum advantage provides measurable performance improvements in portfolio optimization, risk management, and alpha generation that translate directly to bottom-line results.</p>
+                <p>The future of finance is quantum-enhanced, and that future is accelerating faster than most market participants anticipated. Organizations that harness quantum-enhanced AI for trading operations today will define the competitive landscape of tomorrow's financial markets.</p>
+                <figure class="my-8 text-center">
+                    <img src="https://res.cloudinary.com/dad8v7kqc/image/upload/v1756579149/Images_showing_market_growth_and_transformation_hortoy.png" alt="Abstract visualization of market transformation" class="w-full h-auto rounded-lg shadow-2xl shadow-indigo-900/20">
+                    <figcaption class="mt-3 text-sm italic text-slate-400">Quantum-native systems will create entirely new forms of market efficiency and competition.</figcaption>
+                </figure>
+                 <p class="font-bold text-lg text-indigo-300">The quantum disruption is here. The only remaining question is whether your organization will capture the $100 billion opportunity or watch competitors transform the market while you catch up.</p>
+            </section>
+
+        </div>
+    </main>
+
+    <section id="quiz-section" class="py-20 relative z-10">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            <h2 class="text-4xl font-bold mb-4">Test Your Knowledge</h2>
+            <p class="text-slate-400 mb-8">See how well you've understood the quantum revolution in finance.</p>
+            <div id="quiz-container" class="bg-slate-800/80 backdrop-blur-sm p-8 rounded-lg shadow-lg text-left w-full mx-auto">
+                </div>
+            <div id="quiz-results" class="hidden bg-slate-800/80 backdrop-blur-sm p-8 rounded-lg shadow-lg w-full mx-auto">
+                </div>
+        </div>
+    </section>
+
+    <footer class="relative z-10 mt-24">
+    <div class="relative">
+      <img src="https://res.cloudinary.com/dad8v7kqc/image/upload/v1756579839/860_main_quantum_explainer_ie0jxx.png" class="w-full h-[340px] object-cover opacity-30" alt="Quantum visual footer"/>
+      <div class="absolute inset-0 flex items-center">
+        <div class="container mx-auto px-6 grid md:grid-cols-2 gap-6">
+          <div></div>
+          <div class="bg-slate-900/60 backdrop-blur p-8 rounded-3xl border border-white/10 shadow-glow">
+            <h3 class="text-2xl font-bold">Deploy a Quantum‑Ready Trading Strategy</h3>
+            <p class="mt-2 text-slate-300">Co‑design a hybrid quantum‑classical roadmap tailored to your desk. Start with high‑conviction use‑cases, ship pilots in weeks.</p>
+            <a href="#content" class="inline-flex mt-4 px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-500 transition-colors">Let’s Build</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // --- DOM ELEMENT REFERENCES ---
+    const welcomeModal = document.getElementById('welcome-modal');
+    const startBtn = document.getElementById('start-btn');
+    const bgMusic = document.getElementById('background-music');
+    const heroVideo = document.getElementById('hero-video');
+    const heroAudioToggle = document.getElementById('hero-audio-toggle');
+    const iconMuted = document.getElementById('icon-muted');
+    const iconUnmuted = document.getElementById('icon-unmuted');
+    const progressBar = document.getElementById('reading-progress-bar');
+
+    // --- STATE MANAGEMENT ---
+    let audioState = {
+        isBgMusicPlaying: false,
+        isTtsPlaying: false,
+        isYoutubePlaying: false,
+        isHeroVideoUnmuted: false,
+    };
+    
+    const NORMAL_VOL = 0.1;
+    const DUCKED_VOL = 0.02;
+
+    // --- DYNAMIC WELCOME MODAL ---
+    startBtn.addEventListener('click', () => {
+        welcomeModal.style.opacity = '0';
+        setTimeout(() => {
+            welcomeModal.style.display = 'none';
+        }, 500);
+        audioManager.playBgMusic();
+    });
+
+    // --- ADVANCED AUDIO MANAGEMENT SYSTEM ---
+    const audioManager = {
+        fadeInterval: null,
+        
+        fadeAudio: (audioEl, targetVolume, duration = 500) => {
+            clearInterval(audioManager.fadeInterval);
+            const startVolume = audioEl.volume;
+            const stepTime = 20;
+            const steps = duration / stepTime;
+            const volumeStep = (targetVolume - startVolume) / steps;
+
+            let currentStep = 0;
+            audioManager.fadeInterval = setInterval(() => {
+                currentStep++;
+                if (currentStep > steps) {
+                    clearInterval(audioManager.fadeInterval);
+                    audioEl.volume = targetVolume;
+                    if (targetVolume === 0) audioEl.pause();
+                } else {
+                    audioEl.volume += volumeStep;
+                }
+            }, stepTime);
+        },
+
+        playBgMusic: () => {
+            if (!audioState.isBgMusicPlaying) {
+                bgMusic.volume = 0;
+                bgMusic.play().then(() => {
+                    audioState.isBgMusicPlaying = true;
+                    audioManager.reconcileAudio();
+                }).catch(e => console.error("Audio play failed:", e));
+            } else {
+                 audioManager.reconcileAudio();
+            }
+        },
+
+        reconcileAudio: () => {
+            // Priority 1: YouTube is playing.
+            if (audioState.isYoutubePlaying) {
+                // Mute the hero video if it's not already muted.
+                if (!heroVideo.muted) {
+                    heroVideo.muted = true;
+                    audioState.isHeroVideoUnmuted = false;
+                    iconMuted.classList.remove('hidden');
+                    iconUnmuted.classList.add('hidden');
+                }
+                if (audioState.isTtsPlaying) ttsManager.stop();
+                if (audioState.isBgMusicPlaying) audioManager.fadeAudio(bgMusic, DUCKED_VOL);
+                return;
+            }
+
+            // Priority 2: Hero video is unmuted.
+            if (audioState.isHeroVideoUnmuted) {
+                // We know YouTube is not playing, but check just in case.
+                if (youtubePlayer && typeof youtubePlayer.pauseVideo === 'function' && youtubePlayer.getPlayerState() === 1) {
+                    youtubePlayer.pauseVideo();
+                }
+                if (audioState.isTtsPlaying) ttsManager.stop();
+                if (audioState.isBgMusicPlaying) audioManager.fadeAudio(bgMusic, 0);
+                return;
+            }
+            
+            // Priority 3: TTS is playing.
+            if (audioState.isTtsPlaying) {
+                if (audioState.isBgMusicPlaying) audioManager.fadeAudio(bgMusic, DUCKED_VOL);
+                 return;
+            }
+
+            // Default state: Nothing else is active, so bring BG music to normal.
+            if (audioState.isBgMusicPlaying) {
+                if (bgMusic.paused) bgMusic.play();
+                audioManager.fadeAudio(bgMusic, NORMAL_VOL);
+            }
+        }
+    };
+    
+    // --- IMMERSIVE HERO SECTION ---
+    heroAudioToggle.addEventListener('click', () => {
+        heroVideo.muted = !heroVideo.muted;
+        audioState.isHeroVideoUnmuted = !heroVideo.muted;
+        iconMuted.classList.toggle('hidden');
+        iconUnmuted.classList.toggle('hidden');
+        audioManager.reconcileAudio();
+    });
+
+    // --- READING PROGRESS BAR ---
+    window.addEventListener('scroll', () => {
+        const scrollTop = document.documentElement.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrollPercent = (scrollTop / scrollHeight) * 100;
+        progressBar.style.width = `${scrollPercent}%`;
+    });
+
+    /********************** Particles Background (from Blog 3) **********************/
+    function initParticles() {
+      const canvas = document.getElementById('particle-canvas');
+      const ctx = canvas.getContext('2d');
+      let W, H;
+      const DPR = Math.min(2, window.devicePixelRatio || 1);
+      const particles = [];
+      const COUNT = 80;
+      const mouse = { x: -9999, y: -9999 };
+
+      function resize() {
+        W = canvas.width = innerWidth * DPR;
+        H = canvas.height = innerHeight * DPR;
+        canvas.style.width = innerWidth + 'px';
+        canvas.style.height = innerHeight + 'px';
+      }
+      resize();
+      addEventListener('resize', resize);
+
+      for (let i=0;i<COUNT;i++) {
+        particles.push({
+          x: Math.random()*W,
+          y: Math.random()*H,
+          vx: (Math.random()*2-1)*0.25*DPR,
+          vy: (Math.random()*2-1)*0.25*DPR,
+          r: (Math.random()*1.5+0.5)*DPR
+        });
+      }
+
+      canvas.addEventListener('mousemove', e => {
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = (e.clientX - rect.left) * DPR;
+        mouse.y = (e.clientY - rect.top) * DPR;
+      });
+      canvas.addEventListener('mouseleave', () => { mouse.x = -9999; mouse.y = -9999; });
+
+      function step() {
+        ctx.clearRect(0,0,W,H);
+        // draw lines
+        for (let i=0;i<particles.length;i++) {
+          const p = particles[i];
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0 || p.x > W) p.vx *= -1;
+          if (p.y < 0 || p.y > H) p.vy *= -1;
+
+          // mouse interaction
+          const dx = p.x - mouse.x, dy = p.y - mouse.y; const d2 = dx*dx + dy*dy;
+          if (d2 < (120*DPR)*(120*DPR)) {
+            p.vx += dx * -0.00002; p.vy += dy * -0.00002;
+          }
+        }
+        // lines + points
+        for (let i=0;i<particles.length;i++) {
+          for (let j=i+1;j<particles.length;j++) {
+            const a = particles[i], b = particles[j];
+            const dx = a.x - b.x, dy = a.y - b.y; const dist = Math.hypot(dx,dy);
+            if (dist < 120*DPR) {
+              const alpha = 1 - (dist/(120*DPR));
+              ctx.strokeStyle = `rgba(99,102,241,${alpha*0.35})`;
+              ctx.lineWidth = DPR*0.7;
+              ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+            }
+          }
+        }
+        for (const p of particles) {
+          ctx.fillStyle = 'rgba(255,255,255,0.9)';
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+        }
+        requestAnimationFrame(step);
+      }
+      step();
+    }
+
+    
+    // --- TEXT-TO-SPEECH (TTS) ---
+    const ttsManager = {
+        utterance: null,
+        currentTrigger: null,
+
+        play: (text, triggerEl) => {
+            if (speechSynthesis.speaking) {
+                ttsManager.stop();
+                if (triggerEl === ttsManager.currentTrigger) return;
+            }
+            
+            ttsManager.currentTrigger = triggerEl;
+            ttsManager.updateIcon(triggerEl, true);
+
+            ttsManager.utterance = new SpeechSynthesisUtterance(text);
+            ttsManager.utterance.onstart = () => {
+                audioState.isTtsPlaying = true;
+                audioManager.reconcileAudio();
+            };
+            ttsManager.utterance.onend = () => {
+                audioState.isTtsPlaying = false;
+                ttsManager.updateIcon(triggerEl, false);
+                ttsManager.currentTrigger = null;
+                audioManager.reconcileAudio();
+            };
+            speechSynthesis.speak(ttsManager.utterance);
+        },
+
+        stop: () => {
+            speechSynthesis.cancel();
+            if (ttsManager.currentTrigger) {
+                ttsManager.updateIcon(ttsManager.currentTrigger, false);
+            }
+            audioState.isTtsPlaying = false;
+        },
+
+        updateIcon: (triggerEl, isPlaying) => {
+            const icon = triggerEl.parentElement.querySelector('.tts-icon');
+            if(icon) {
+                icon.innerHTML = isPlaying 
+                    ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h.01M15 10h.01M10 14a4 4 0 004 0" /></svg>` 
+                    : `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+            }
+        }
+    };
+
+    document.querySelectorAll('h2').forEach(h2 => {
+        const trigger = h2.querySelector('.tts-trigger');
+        if (trigger) {
+            const button = document.createElement('button');
+            button.className = 'tts-icon-button ml-3 inline-block align-middle transform hover:scale-110 transition-transform';
+            button.innerHTML = `<span class="tts-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></span>`;
+            h2.appendChild(button);
+
+            button.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const section = h2.closest('[data-tts-section]');
+                const textToRead = Array.from(section.querySelectorAll('h2, h3, p')).map(el => el.textContent).join('. ');
+                ttsManager.play(textToRead, trigger);
+            });
+        }
+    });
+
+    // --- DATA VISUALIZATION (Chart.js) ---
+    const chartCtx = document.getElementById('marketGrowthChart').getContext('2d');
+    new Chart(chartCtx, {
+        type: 'bar',
+        data: {
+            labels: ['2025', '2034'],
+            datasets: [{
+                label: 'Market Size (in Million USD)',
+                data: [473.54, 6959.29],
+                backgroundColor: ['rgba(99, 102, 241, 0.6)', 'rgba(167, 139, 250, 0.6)'],
+                borderColor: ['rgba(99, 102, 241, 1)', 'rgba(167, 139, 250, 1)'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                title: { display: true, text: 'Quantum AI Market Growth Projection', color: '#e0e0e0', font: { size: 18, family: "'Teko', sans-serif" }}
+            },
+            scales: {
+                y: { beginAtZero: true, ticks: { color: '#94a3b8', callback: (value) => '$' + value.toLocaleString() }, grid: { color: 'rgba(255, 255, 255, 0.1)' }},
+                x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } }
+            },
+            animation: { duration: 2000, easing: 'easeInOutQuint' }
+        }
+    });
+
+    // --- YOUTUBE IFrame API ---
+    let youtubePlayer;
+    function onYouTubeIframeAPIReady() {
+        youtubePlayer = new YT.Player('youtube-player', {
+            height: '100%', width: '100%', videoId: '9XB-LsfpvCU',
+            playerVars: { 'playsinline': 1, 'modestbranding': 1, 'rel': 0 },
+            events: { 'onStateChange': onPlayerStateChange }
+        });
+    }
+
+    function onPlayerStateChange(event) {
+        if (event.data == YT.PlayerState.PLAYING) {
+            audioState.isYoutubePlaying = true;
+        } else {
+            audioState.isYoutubePlaying = false;
+        }
+        audioManager.reconcileAudio();
+    }
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
+
+    // --- INTERACTIVE QUIZ ---
+    const quizData = [
+        { question: "What accuracy rate did SpinQ and Huaxia Bank achieve using quantum neural networks?", answers: ["85%", "99%", "92%"], correct: 1 },
+        { question: "What is the projected CAGR for the quantum AI market by 2034?", answers: ["25.10%", "42.50%", "34.80%"], correct: 2 },
+        { question: "Why is a 'hybrid quantum-classical' system described as the most practical approach today?", answers: ["It's cheaper to build than a pure quantum computer.", "It leverages quantum strengths while mitigating current hardware limitations like noise.", "Regulatory bodies only approve hybrid systems for finance."], correct: 1 },
+        { question: "Which major bank pioneers quantum protection for AI-powered foreign exchange trading?", answers: ["HSBC", "JPMorgan Chase", "BNP Paribas"], correct: 0 },
+        { question: "What's the main advantage of quantum computing in high-frequency trading?", answers: ["It reduces electricity consumption.", "It can process vast market data in real-time to spot fleeting arbitrage opportunities.", "It provides better user interfaces for traders."], correct: 1 },
+        { question: "How much faster can quantum computers solve certain optimization problems?", answers: ["Twice as fast", "Ten times as fast", "Exponentially faster"], correct: 2 },
+        { question: "For a smaller firm, which is the most suitable quantum adoption strategy?", answers: ["Building a large in-house research team.", "The Partnership Collaboration Model.", "Acquiring multiple quantum startups."], correct: 1 },
+        { question: "What percentage of organizations cited finance-oriented optimization as their top quantum priority?", answers: ["48%", "62%", "35%"], correct: 0 },
+        { question: "What is the projected revenue potential for quantum computing by 2035?", answers: ["$50 billion", "$100 billion", "$75 billion"], correct: 1 },
+        { question: "What does the article imply is the biggest risk for financial institutions regarding quantum computing?", answers: ["The high cost of quantum hardware.", "Current instability and noise in qubits.", "Competitive disruption from early adopters."], correct: 2 }
+    ];
+
+    const quizContainer = document.getElementById('quiz-container');
+    const resultsContainer = document.getElementById('quiz-results');
+    let currentQuestionIndex = 0;
+    let userScore = 0;
+
+    function showQuestion() {
+        const question = quizData[currentQuestionIndex];
+        quizContainer.innerHTML = `
+            <div class="mb-4">
+                <p class="text-slate-400">Question ${currentQuestionIndex + 1} of ${quizData.length}</p>
+                <h3 class="text-2xl font-semibold mt-1">${question.question}</h3>
+            </div>
+            <div class="space-y-3">
+                ${question.answers.map((answer, index) => `
+                    <button data-index="${index}" class="quiz-option block w-full text-left p-4 bg-slate-700 rounded-lg hover:bg-indigo-600 transition-colors">
+                        ${answer}
+                    </button>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    function confettiEffect() {
+        const container = resultsContainer;
+        for (let i = 0; i < 100; i++) {
+            const confetti = document.createElement('div');
+            confetti.classList.add('confetti');
+            confetti.style.left = `${Math.random() * 100}%`;
+            confetti.style.animationDelay = `${Math.random() * 5}s`;
+            confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+            container.appendChild(confetti);
+        }
+    }
+
+    function showResults() {
+        quizContainer.classList.add('hidden');
+        resultsContainer.classList.remove('hidden');
+        const percentage = (userScore / quizData.length) * 100;
+        let message, styleClass;
+
+        if (percentage >= 90) {
+            message = "Excellent! You have a superior grasp of the quantum financial landscape. You're ready for the future!";
+            styleClass = "glowing-border-excellent";
+            confettiEffect();
+        } else if (percentage >= 60) {
+            message = "Good Job! You have a solid understanding of the key concepts. The quantum revolution awaits.";
+            styleClass = "border-2 border-green-500";
+        } else {
+            message = "A good start. We recommend revisiting the article to solidify your understanding of this transformative technology.";
+            styleClass = "border-2 border-slate-500";
+        }
+
+        resultsContainer.innerHTML = `
+            <div class="p-6 rounded-lg ${styleClass} transition-all duration-500 relative overflow-hidden">
+                <h3 class="text-3xl font-bold mb-2">Quiz Complete!</h3>
+                <p class="text-5xl font-bold my-4 text-indigo-300">${userScore} / ${quizData.length}</p>
+                <p class="text-lg text-slate-300">${message}</p>
+            </div>
+        `;
+    }
+
+    quizContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('quiz-option')) {
+            const selectedIndex = parseInt(e.target.dataset.index);
+            if (selectedIndex === quizData[currentQuestionIndex].correct) {
+                userScore++;
+            }
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                showQuestion();
+            } else {
+                showResults();
+            }
+        }
+    });
+
+    showQuestion();
+    
+    // Initialize the new particle background
+    initParticles();
+});
+</script>
+</body>
+</html>
