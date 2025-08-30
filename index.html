@@ -293,7 +293,7 @@
 
             <section data-tts-section>
                 <h2><span class="tts-trigger">Strategic Market Positioning: The Quantum-Native Future</span></h2>
-                <p>The evolution toward quantum-native financial systems will fundamentally reshape market dynamics and competitive positioning. We're witnessing the emergence of quantum-enhanced trading ecosystems that provide systemic advantages rather than merely incremental computational improvements.</p>
+                <p>The evolution toward quantum-native financial systems will fundamentally reshape market dynamics and competitive positioning. We're witnessing the emergence of a quantum-enhanced trading ecosystem that provides systemic advantages rather than merely incremental computational improvements.</p>
                 <p>Quantum networking capabilities will enable real-time collaborative optimization across distributed trading systems, creating new forms of market efficiency and competitive advantage. The institutions that master quantum-enhanced AI trading will not only outperform competitors—they will operate in fundamentally different competitive environments with superior analytical capabilities and risk management frameworks.</p>
                 <p>The quantum advantage is real, measurable, and available today through hybrid quantum-classical systems that integrate with existing trading infrastructure. Early adopters are already capturing measurable alpha through quantum-enhanced portfolio optimization, risk management, and high-frequency trading strategies.</p>
             </section>
@@ -412,41 +412,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
 
+        // This function now ONLY manages the background music based on the final state.
         reconcileAudio: () => {
-            // Priority 1: YouTube is playing.
-            if (audioState.isYoutubePlaying) {
-                // Mute the hero video if it's not already muted.
-                if (!heroVideo.muted) {
-                    heroVideo.muted = true;
-                    audioState.isHeroVideoUnmuted = false;
-                    iconMuted.classList.remove('hidden');
-                    iconUnmuted.classList.add('hidden');
-                }
-                if (audioState.isTtsPlaying) ttsManager.stop();
-                if (audioState.isBgMusicPlaying) audioManager.fadeAudio(bgMusic, DUCKED_VOL);
-                return;
-            }
+            if (!audioState.isBgMusicPlaying) return;
 
-            // Priority 2: Hero video is unmuted.
+            // Priority 1: Hero Video is active. BG music must be off.
             if (audioState.isHeroVideoUnmuted) {
-                // We know YouTube is not playing, but check just in case.
-                if (youtubePlayer && typeof youtubePlayer.pauseVideo === 'function' && youtubePlayer.getPlayerState() === 1) {
-                    youtubePlayer.pauseVideo();
-                }
-                if (audioState.isTtsPlaying) ttsManager.stop();
-                if (audioState.isBgMusicPlaying) audioManager.fadeAudio(bgMusic, 0);
-                return;
-            }
-            
-            // Priority 3: TTS is playing.
-            if (audioState.isTtsPlaying) {
-                if (audioState.isBgMusicPlaying) audioManager.fadeAudio(bgMusic, DUCKED_VOL);
-                 return;
-            }
-
-            // Default state: Nothing else is active, so bring BG music to normal.
-            if (audioState.isBgMusicPlaying) {
-                if (bgMusic.paused) bgMusic.play();
+                audioManager.fadeAudio(bgMusic, 0);
+            } 
+            // Priority 2: YouTube or TTS is active. BG music is ducked.
+            else if (audioState.isYoutubePlaying || audioState.isTtsPlaying) {
+                if (bgMusic.paused) bgMusic.play().catch(e => console.error("Failed to resume BG music:", e));
+                audioManager.fadeAudio(bgMusic, DUCKED_VOL);
+            } 
+            // Default: Nothing is active. BG music is normal.
+            else {
+                if (bgMusic.paused) bgMusic.play().catch(e => console.error("Failed to resume BG music:", e));
                 audioManager.fadeAudio(bgMusic, NORMAL_VOL);
             }
         }
@@ -454,10 +435,22 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- IMMERSIVE HERO SECTION ---
     heroAudioToggle.addEventListener('click', () => {
-        heroVideo.muted = !heroVideo.muted;
-        audioState.isHeroVideoUnmuted = !heroVideo.muted;
-        iconMuted.classList.toggle('hidden');
-        iconUnmuted.classList.toggle('hidden');
+        const isNowMuted = !heroVideo.muted;
+        heroVideo.muted = isNowMuted;
+        audioState.isHeroVideoUnmuted = !isNowMuted;
+        iconMuted.classList.toggle('hidden', !isNowMuted);
+        iconUnmuted.classList.toggle('hidden', isNowMuted);
+
+        // If we just unmuted the hero video, take control.
+        if (audioState.isHeroVideoUnmuted) {
+            if (window.youtubePlayer && typeof window.youtubePlayer.pauseVideo === 'function') {
+                window.youtubePlayer.pauseVideo();
+            }
+            if (speechSynthesis.speaking) {
+                ttsManager.stop();
+            }
+        }
+        
         audioManager.reconcileAudio();
     });
 
@@ -469,7 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
         progressBar.style.width = `${scrollPercent}%`;
     });
 
-    /********************** Particles Background (from Blog 3) **********************/
+    /********************** Particles Background **********************/
     function initParticles() {
       const canvas = document.getElementById('particle-canvas');
       const ctx = canvas.getContext('2d');
@@ -507,20 +500,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
       function step() {
         ctx.clearRect(0,0,W,H);
-        // draw lines
         for (let i=0;i<particles.length;i++) {
           const p = particles[i];
           p.x += p.vx; p.y += p.vy;
           if (p.x < 0 || p.x > W) p.vx *= -1;
           if (p.y < 0 || p.y > H) p.vy *= -1;
-
-          // mouse interaction
           const dx = p.x - mouse.x, dy = p.y - mouse.y; const d2 = dx*dx + dy*dy;
           if (d2 < (120*DPR)*(120*DPR)) {
             p.vx += dx * -0.00002; p.vy += dy * -0.00002;
           }
         }
-        // lines + points
         for (let i=0;i<particles.length;i++) {
           for (let j=i+1;j<particles.length;j++) {
             const a = particles[i], b = particles[j];
@@ -554,6 +543,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (triggerEl === ttsManager.currentTrigger) return;
             }
             
+            // Take control from other media BEFORE playing.
+            if (window.youtubePlayer && typeof window.youtubePlayer.pauseVideo === 'function') {
+                window.youtubePlayer.pauseVideo();
+            }
+            if (audioState.isHeroVideoUnmuted) {
+                heroVideo.muted = true;
+                audioState.isHeroVideoUnmuted = false;
+                iconMuted.classList.remove('hidden');
+                iconUnmuted.classList.add('hidden');
+            }
+
             ttsManager.currentTrigger = triggerEl;
             ttsManager.updateIcon(triggerEl, true);
 
@@ -573,10 +573,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         stop: () => {
             speechSynthesis.cancel();
-            if (ttsManager.currentTrigger) {
-                ttsManager.updateIcon(ttsManager.currentTrigger, false);
-            }
-            audioState.isTtsPlaying = false;
+            // The onend event will handle state changes.
         },
 
         updateIcon: (triggerEl, isPlaying) => {
@@ -635,9 +632,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- YOUTUBE IFrame API ---
-    let youtubePlayer;
+    window.youtubePlayer = null; 
     function onYouTubeIframeAPIReady() {
-        youtubePlayer = new YT.Player('youtube-player', {
+        window.youtubePlayer = new YT.Player('youtube-player', {
             height: '100%', width: '100%', videoId: '9XB-LsfpvCU',
             playerVars: { 'playsinline': 1, 'modestbranding': 1, 'rel': 0 },
             events: { 'onStateChange': onPlayerStateChange }
@@ -647,6 +644,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function onPlayerStateChange(event) {
         if (event.data == YT.PlayerState.PLAYING) {
             audioState.isYoutubePlaying = true;
+
+            // Take control from Hero and TTS
+            if (audioState.isHeroVideoUnmuted) {
+                heroVideo.muted = true;
+                audioState.isHeroVideoUnmuted = false;
+                iconMuted.classList.remove('hidden');
+                iconUnmuted.classList.add('hidden');
+            }
+            if (speechSynthesis.speaking) {
+                ttsManager.stop();
+            }
         } else {
             audioState.isYoutubePlaying = false;
         }
@@ -754,7 +762,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initParticles();
 });
 </script>
-    <script src="//code.tidio.co/6yc6stoayglu4dbhj4hhulwgiksrxx0b.js" async></script>
+<script src="//code.tidio.co/6yc6stoayglu4dbhj4hhulwgiksrxx0b.js" async></script>
 </body>
-
 </html>
